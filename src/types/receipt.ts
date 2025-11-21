@@ -27,6 +27,7 @@ export interface ReceiptSplitParticipant {
   amount: number;
   payLink: string;
   status: "pending" | "paid";
+  selectedProducts?: string[]; // Массив productId выбранных товаров
 }
 
 export interface ReceiptSplit {

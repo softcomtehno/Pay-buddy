@@ -111,6 +111,7 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
       );
       setParticipants(newParticipants);
     } else {
+      // Режим "Ручной ввод" - создаем участников с пустым списком товаров
       const newParticipants: ReceiptSplitParticipant[] = Array.from(
         { length: count },
         (_, index) => {
@@ -121,6 +122,7 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
             amount: 0,
             payLink: buildPayLink(receiptData.id, id, 0),
             status: "pending",
+            selectedProducts: [],
           };
         }
       );
@@ -134,7 +136,39 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
     );
   };
 
+  // Переключение товара для участника (режим "Ручной ввод")
+  const toggleProductForParticipant = (
+    participantId: string,
+    productId: string
+  ) => {
+    setParticipants((prev) =>
+      prev.map((p) => {
+        if (p.id === participantId) {
+          const currentProducts = p.selectedProducts || [];
+          const isSelected = currentProducts.includes(productId);
+          const newProducts = isSelected
+            ? currentProducts.filter((id) => id !== productId)
+            : [...currentProducts, productId];
+
+          // Пересчитываем сумму на основе выбранных товаров
+          const newAmount = receiptData.products
+            .filter((prod) => newProducts.includes(String(prod.productId)))
+            .reduce((sum, prod) => sum + toNumber(prod.productCost), 0);
+
+          return {
+            ...p,
+            selectedProducts: newProducts,
+            amount: newAmount,
+            payLink: buildPayLink(receiptData.id, participantId, newAmount),
+          };
+        }
+        return p;
+      })
+    );
+  };
+
   const handleAmountChange = (id: string, value: string) => {
+    // Это используется только для режима "Равные доли" или если нужно вручную скорректировать
     const amount = toNumber(value);
     setParticipants((prev) =>
       prev.map((p) => {
@@ -270,7 +304,9 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
             <div className="card">
               <h2 className="card-title">Разделить счет</h2>
               <p className="muted">
-                Разделите чек между участниками для оплаты в складчину
+                {mode === "equal"
+                  ? "Разделите чек поровну между участниками"
+                  : "Распределите товары по участникам - каждый оплатит только свои покупки"}
               </p>
 
               <div className="form__section" style={{ marginTop: 16 }}>
@@ -297,7 +333,10 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
                           ? "mode-toggle__button mode-toggle__button--active"
                           : "mode-toggle__button"
                       }
-                      onClick={() => setMode("equal")}
+                      onClick={() => {
+                        setMode("equal");
+                        setParticipants([]);
+                      }}
                     >
                       Равные доли
                     </button>
@@ -308,12 +347,24 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
                           ? "mode-toggle__button mode-toggle__button--active"
                           : "mode-toggle__button"
                       }
-                      onClick={() => setMode("manual")}
+                      onClick={() => {
+                        setMode("manual");
+                        setParticipants([]);
+                      }}
                     >
-                      Ручной ввод
+                      По товарам
                     </button>
                   </div>
                 </div>
+                {mode === "manual" && (
+                  <p
+                    className="muted"
+                    style={{ marginTop: 8, fontSize: "0.9rem" }}
+                  >
+                    Каждый участник выберет товары, которые он покупал. Сумма
+                    будет рассчитана автоматически.
+                  </p>
+                )}
 
                 <button
                   type="button"
@@ -400,22 +451,70 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
                         </span>
                       </div>
 
-                      <div className="split-participant-card__row">
-                        <label>Сумма</label>
-                        <input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={participant.amount}
-                          onChange={(event) =>
-                            handleAmountChange(
-                              participant.id,
-                              event.target.value
-                            )
-                          }
-                          disabled={mode === "equal"}
-                        />
-                      </div>
+                      {mode === "manual" ? (
+                        <div className="split-participant-card__products">
+                          <label>Выберите товары:</label>
+                          <div className="products-selection">
+                            {receiptData.products.map((product) => {
+                              const productId = String(product.productId);
+                              const isSelected =
+                                participant.selectedProducts?.includes(
+                                  productId
+                                ) || false;
+                              return (
+                                <label
+                                  key={product.productId}
+                                  className="product-checkbox"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() =>
+                                      toggleProductForParticipant(
+                                        participant.id,
+                                        productId
+                                      )
+                                    }
+                                  />
+                                  <span className="product-checkbox__label">
+                                    <span className="product-checkbox__name">
+                                      {product.productName.trim()}
+                                    </span>
+                                    <span className="product-checkbox__price">
+                                      {formatCurrency(
+                                        toNumber(product.productCost)
+                                      )}{" "}
+                                      сом
+                                    </span>
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="split-participant-card__total">
+                            <strong>
+                              Итого: {formatCurrency(participant.amount)} сом
+                            </strong>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="split-participant-card__row">
+                          <label>Сумма</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={participant.amount}
+                            onChange={(event) =>
+                              handleAmountChange(
+                                participant.id,
+                                event.target.value
+                              )
+                            }
+                            disabled={mode === "equal"}
+                          />
+                        </div>
+                      )}
 
                       <div className="split-participant-card__row">
                         <label>Ссылка на оплату</label>
