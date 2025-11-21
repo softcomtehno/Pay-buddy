@@ -11,22 +11,25 @@ const Home = () => {
       <div className="home">
         <section className="hero">
           <div className="hero__content">
-            <TrueFocus
-              sentence="💰 Pay Buddy"
-              manualMode={false}
-              blurAmount={5}
-              borderColor="red"
-              animationDuration={2}
-              pauseBetweenAnimations={1}
-            />
-            <BlurText
-              text="Умное приложение для разделения счетов и управления совместными расходами"
-              delay={250}
-              animateBy="words"
-              direction="top"
-              // onAnimationComplete={handleAnimationComplete}
-              className="text-4xl font-bold mb-8"
-            />
+            <div className="flex items-center gap-2 justify-center">
+              <img
+                className="bg-white rounded-lg p-2"
+                src="/icons8-деньги-60.png"
+                alt="Pay Buddy"
+              />
+              <TrueFocus
+                sentence="Pay Buddy"
+                manualMode={false}
+                blurAmount={5}
+                borderColor="red"
+                animationDuration={2}
+                pauseBetweenAnimations={1}
+              />
+            </div>
+            <p className="mt-4 text-4xl font-bold mb-8">
+              Умное приложение для разделения счетов и управления совместными
+              расходами
+            </p>
             <p className="hero__description">
               Больше никаких сложных расчетов! Pay Buddy поможет вам легко
               разделить счет в ресторане, рассчитать общие расходы на вечеринке

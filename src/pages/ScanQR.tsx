@@ -2,7 +2,6 @@ import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import QRScanner from "@/components/QRScanner";
 import ReceiptSplitter from "@/components/ReceiptSplitter";
-import type { QRScanResponse } from "@/types/api";
 import type { ReceiptData } from "@/types/receipt";
 import "@/pages/ScanQR.css";
 
@@ -164,7 +163,9 @@ const ScanQR = () => {
 
   // Если получены данные чека, показываем интерфейс разделения
   if (receiptData) {
-    return <ReceiptSplitter receiptData={receiptData} onClose={handleCloseReceipt} />;
+    return (
+      <ReceiptSplitter receiptData={receiptData} onClose={handleCloseReceipt} />
+    );
   }
 
   return (

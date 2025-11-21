@@ -9,9 +9,16 @@ const Navigation = () => {
   return (
     <nav className="navigation">
       <div className="navigation__container">
-        <Link to="/" className="navigation__logo">
-          💰 Pay Buddy
-        </Link>
+        <div className="flex items-center gap-2 justify-center">
+          <img
+            className="bg-white rounded-lg p-2"
+            src="/icons8-деньги-30.png"
+            alt="Pay Buddy"
+          />
+          <Link to="/" className="navigation__logo">
+            Pay Buddy
+          </Link>
+        </div>
         <ul className="navigation__menu">
           <li>
             <Link
