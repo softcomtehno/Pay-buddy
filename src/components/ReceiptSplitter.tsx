@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import * as XLSX from "xlsx";
 import type { ReceiptData, ReceiptSplitParticipant } from "@/types/receipt";
 import { formatCurrency, toNumber } from "@/utils/number";
 import Navigation from "@/components/Navigation";
@@ -200,6 +201,134 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
     alert("Ссылка скопирована!");
   };
 
+  // Экспорт данных в Excel
+  const handleExportToExcel = () => {
+    if (participants.length === 0) {
+      alert("Нет данных для экспорта. Сначала создайте список участников.");
+      return;
+    }
+
+    // Создаем рабочую книгу
+    const workbook = XLSX.utils.book_new();
+
+    // Лист 1: Информация о чеке
+    const receiptInfo = [
+      ["Информация о чеке"],
+      ["Магазин", receiptData.locationName],
+      ["Адрес", receiptData.address],
+      ["Кассир", receiptData.cashierName],
+      ["Дата", `${receiptData.date} ${receiptData.time}`],
+      ["Сумма чека", `${formatCurrency(totalAmount)} сом`],
+      ["Режим деления", mode === "equal" ? "Равные доли" : "По товарам"],
+      [],
+      ["Итого назначено", `${formatCurrency(assignedTotal)} сом`],
+      ["Итого оплачено", `${formatCurrency(paidTotal)} сом`],
+      [
+        "Осталось",
+        `${formatCurrency(Math.max(totalAmount - paidTotal, 0))} сом`,
+      ],
+    ];
+
+    const receiptSheet = XLSX.utils.aoa_to_sheet(receiptInfo);
+    XLSX.utils.book_append_sheet(workbook, receiptSheet, "Информация о чеке");
+
+    // Лист 2: Товары
+    const productsData = [
+      ["№", "Название товара", "Количество", "Цена за шт.", "Сумма"],
+      ...receiptData.products.map((product, index) => [
+        index + 1,
+        product.productName.trim(),
+        product.productCount,
+        `${formatCurrency(toNumber(product.productPrice))} сом`,
+        `${formatCurrency(toNumber(product.productCost))} сом`,
+      ]),
+      [],
+      ["Итого", "", "", "", `${formatCurrency(totalAmount)} сом`],
+    ];
+
+    const productsSheet = XLSX.utils.aoa_to_sheet(productsData);
+    XLSX.utils.book_append_sheet(workbook, productsSheet, "Товары");
+
+    // Лист 3: Участники
+    const participantsData = [
+      [
+        "№",
+        "Имя участника",
+        "Сумма",
+        "Статус",
+        "Ссылка на оплату",
+        ...(mode === "manual" ? ["Выбранные товары"] : []),
+      ],
+      ...participants.map((participant, index) => {
+        const row: (string | number)[] = [
+          index + 1,
+          participant.name,
+          `${formatCurrency(participant.amount)} сом`,
+          participant.status === "paid" ? "Оплачено" : "Не оплачено",
+          participant.payLink,
+        ];
+
+        if (mode === "manual" && participant.selectedProducts) {
+          const selectedProductsNames = receiptData.products
+            .filter((p) =>
+              participant.selectedProducts?.includes(String(p.productId))
+            )
+            .map((p) => p.productName.trim())
+            .join(", ");
+          row.push(selectedProductsNames || "Нет выбранных товаров");
+        }
+
+        return row;
+      }),
+    ];
+
+    const participantsSheet = XLSX.utils.aoa_to_sheet(participantsData);
+    XLSX.utils.book_append_sheet(workbook, participantsSheet, "Участники");
+
+    // Лист 4: Детализация по участникам (только для режима "По товарам")
+    if (mode === "manual") {
+      participants.forEach((participant, participantIndex) => {
+        if (
+          participant.selectedProducts &&
+          participant.selectedProducts.length > 0
+        ) {
+          const participantProducts = [
+            [`Участник: ${participant.name}`],
+            ["Название товара", "Количество", "Цена за шт.", "Сумма"],
+            ...receiptData.products
+              .filter((p) =>
+                participant.selectedProducts?.includes(String(p.productId))
+              )
+              .map((product) => [
+                product.productName.trim(),
+                product.productCount,
+                `${formatCurrency(toNumber(product.productPrice))} сом`,
+                `${formatCurrency(toNumber(product.productCost))} сом`,
+              ]),
+            [],
+            ["Итого", "", "", `${formatCurrency(participant.amount)} сом`],
+          ];
+
+          const participantSheet = XLSX.utils.aoa_to_sheet(participantProducts);
+          XLSX.utils.book_append_sheet(
+            workbook,
+            participantSheet,
+            `Участник ${participantIndex + 1}`
+          );
+        }
+      });
+    }
+
+    // Генерируем имя файла
+    const fileName = `Чек_${receiptData.id.slice(-8)}_${new Date()
+      .toISOString()
+      .split("T")[0]
+      .replace(/-/g, "")}.xlsx`;
+
+    // Сохраняем файл
+    XLSX.writeFile(workbook, fileName);
+  };
+
   const assignedTotal = useMemo(
     () => participants.reduce((sum, p) => sum + p.amount, 0),
     [participants]
@@ -380,11 +509,28 @@ const ReceiptSplitter = ({ receiptData, onClose }: ReceiptSplitterProps) => {
             {participants.length > 0 && (
               <div className="card">
                 <div className="split-header">
-                  <div>
-                    <h3 className="section-title">Участники</h3>
-                    <p className="muted">
-                      Сформирован {new Date().toLocaleString("ru-RU")}
-                    </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      flexWrap: "wrap",
+                      gap: "1rem",
+                    }}
+                  >
+                    <div>
+                      <h3 className="section-title">Участники</h3>
+                      <p className="muted">
+                        Сформирован {new Date().toLocaleString("ru-RU")}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      onClick={handleExportToExcel}
+                    >
+                      📊 Экспорт в Excel
+                    </button>
                   </div>
                   <div className="split-summary">
                     <div className="flex items-center gap-2">

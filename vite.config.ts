@@ -27,7 +27,19 @@ export default defineConfig({
   },
   cacheDir: cacheDir,
   optimizeDeps: {
-    force: false,
+    force: true,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Разделяем большие библиотеки на отдельные чанки
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'xlsx-vendor': ['xlsx'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // Увеличиваем лимит предупреждения до 1MB
   },
 })
 
