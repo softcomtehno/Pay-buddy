@@ -1,0 +1,146 @@
+.receipt-splitter {
+  min-height: 100vh;
+  padding: 2rem 0;
+  background: #050505;
+  color: #f6f6f6;
+}
+
+.receipt-splitter .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.receipt-header {
+  margin-bottom: 2rem;
+}
+
+.receipt-header__title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #f6f6f6;
+}
+
+.receipt-info {
+  background: #0b0b0b;
+  border: 1px solid #1f1f1f;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.receipt-info__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.receipt-info__label {
+  color: #b7b7b7;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.receipt-info__value {
+  color: #f6f6f6;
+  text-align: right;
+  flex: 1;
+  word-break: break-word;
+}
+
+.receipt-info__value--total {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f6f6f6;
+}
+
+.receipt-products {
+  margin-bottom: 2rem;
+}
+
+.receipt-products__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #f6f6f6;
+}
+
+.receipt-products__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.receipt-product {
+  background: #0b0b0b;
+  border: 1px solid #1f1f1f;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.receipt-product__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.receipt-product__index {
+  font-weight: 700;
+  color: #f6f6f6;
+  min-width: 30px;
+}
+
+.receipt-product__name {
+  flex: 1;
+  color: #f6f6f6;
+  font-weight: 500;
+}
+
+.receipt-product__details {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  color: #b7b7b7;
+  font-size: 0.9rem;
+  margin-left: 38px;
+}
+
+.receipt-product__cost {
+  margin-left: auto;
+  font-weight: 600;
+  color: #f6f6f6;
+}
+
+.split-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .receipt-info__row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .receipt-info__value {
+    text-align: left;
+  }
+
+  .receipt-product__details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-left: 0;
+  }
+
+  .receipt-product__cost {
+    margin-left: 0;
+  }
+}
+
