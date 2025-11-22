@@ -14,7 +14,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
 }
 
 .navigation__header {
@@ -53,6 +53,8 @@
   transition: all 0.2s;
   border: 1px solid transparent;
   background: transparent;
+  display: inline-block;
+  width: 100%;
 }
 
 .navigation__link:hover {

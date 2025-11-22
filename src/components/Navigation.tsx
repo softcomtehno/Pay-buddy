@@ -31,7 +31,9 @@ const Navigation = () => {
             </Link>
           </div>
           <button
-            className={`navigation__burger ${isMenuOpen ? "navigation__burger--open" : ""}`}
+            className={`navigation__burger ${
+              isMenuOpen ? "navigation__burger--open" : ""
+            }`}
             onClick={toggleMenu}
             aria-label="Меню"
             aria-expanded={isMenuOpen}
@@ -41,7 +43,11 @@ const Navigation = () => {
             <span></span>
           </button>
         </div>
-        <ul className={`navigation__menu ${isMenuOpen ? "navigation__menu--open" : ""}`}>
+        <ul
+          className={`navigation__menu ${
+            isMenuOpen ? "navigation__menu--open" : ""
+          }`}
+        >
           <li>
             <Link
               to="/"
