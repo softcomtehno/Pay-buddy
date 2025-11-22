@@ -22,9 +22,18 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Выделяем vendor библиотеки в отдельные чанки
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
+        manualChunks(id) {
+          // Разделяем тяжелые библиотеки на отдельные чанки
+          if (id.includes("node_modules")) {
+            // motion - библиотека анимаций
+            if (id.includes("motion")) {
+              return "motion-vendor";
+            }
+            // lucide-react - иконки могут быть тяжелыми
+            if (id.includes("lucide-react")) {
+              return "icons-vendor";
+            }
+          }
         },
       },
     },

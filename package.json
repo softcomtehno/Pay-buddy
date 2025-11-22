@@ -17,14 +17,12 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7",
-    "xlsx": "^0.18.5"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@types/xlsx": "^0.0.36",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.22",
     "postcss": "^8.5.6",
